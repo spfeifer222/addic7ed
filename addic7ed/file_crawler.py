@@ -4,15 +4,23 @@ import re
 from collections import OrderedDict
 from termcolor import colored
 
-from addic7ed.shows import Shows
 from addic7ed.config import Config
 
-REGEX = r"(.*)\.[s|S]?([0-9]{1,2})[x|X|e|E]?([0-9]{2})\..*-(\w*)"
-
+#REGEX = r"(.*)\.[s|S]?([0-9]{1,2})[x|X|e|E]?([0-9]{2})\..*-(\w*)"
+REGEX = re.compile(r"""
+                (.*)         # group 1: series title
+                [-. ]*       # Trennzeichen, if exists
+                [s]?         # s for series, if exists
+                ([0-9]+) # group 2: series no
+                [x|e]        # x or e for episode
+                ([0-9]+)   # group 3: episode no
+                [-. ]*       # Trennzeichen, if exists
+                (.*)         # group 4: extra info (greedy)
+                (\.\w+)$      # group 5: file extension incl. '.'
+                """, re.X|re.I)
 
 class FileCrawler:
     def __init__(self):
-        self.shows = Shows()
         self.episodes = OrderedDict()
         listfile = Config.paths or sorted(os.listdir())
         for f in listfile:
@@ -26,7 +34,10 @@ class FileCrawler:
         print(colored("%s... " % filename, "white", attrs=["dark"]),
               end="", flush=True)
         if m:
-            serie = self.shows.get(m.group(1).replace('.', ' ').title())
+            if Config.title:
+                serie = Config.title
+            else:
+                serie = m.group(1).replace('.', ' ')
             season = int(m.group(2))
             episode = int(m.group(3))
             group = m.group(4)

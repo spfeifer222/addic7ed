@@ -92,6 +92,8 @@ class Config():
                             choices=RENAME_MODES,
                             help=("rename sub/video to match video/sub "
                                   "or none at all (default: none)."))
+        parser.add_argument("-t", "--title", type=str,
+                            help="Provide title, if it's not part of filename(s).")
 
         args = parser.parse_args()
 
@@ -120,6 +122,9 @@ class Config():
 
         if args.rename:
             self.rename = args.rename
+
+        if args.title:
+            self.title = args.title
 
     def __setattr__(self, name, value):
         if name == "lang":
